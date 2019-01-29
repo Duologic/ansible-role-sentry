@@ -1,0 +1,11 @@
+---
+- name: Install virtualenv with OS package manager
+  package: name=python-virtualenv state=present
+
+- name: Create a virtualenv and install Sentry with pip
+  pip:
+    name: sentry
+    version: 9.0.0
+    virtualenv: /srv/sentry
+    virtualenv_python: /usr/bin/python2.7
+    state: present
