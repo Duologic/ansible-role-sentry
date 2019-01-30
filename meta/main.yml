@@ -2,6 +2,7 @@
 dependencies: []
 
 galaxy_info:
+  role_name: 'sentry'
   author: Duologic
   description: Sentry installation with Python.
   license: "MIT"
