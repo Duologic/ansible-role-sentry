@@ -1,11 +1,127 @@
 ---
-- name: Install virtualenv with OS package manager
-  package: name=python-virtualenv state=present
+- name: Install packages required by Sentry
+  apt: name={{ packages }} state=present
+  vars:
+      packages:
+        - python-virtualenv
+        - python-setuptools
+        - python-dev
+        - libxslt1-dev
+        - gcc
+        - libffi-dev
+        - libjpeg-dev
+        - libxml2-dev
+        - libxslt-dev
+        - libyaml-dev
+        - libpq-dev
+  when: ansible_os_family == 'Debian'
+
+- name: Install packages required by Sentry
+  yum: name={{ packages }} state=present
+  vars:
+      packages:
+        - python-virtualenv
+        - python-setuptools
+        - python-devel
+        - gcc
+        - gcc-c++
+        - libffi-devel
+        - libjpeg-turbo-devel
+        - libxml2-devel
+        - libxslt-devel
+        - libyaml-devel
+        - libpqxx-devel
+  when: ansible_os_family == 'RedHat'
+
+- name: Add Sentry group
+  group:
+    name: '{{ sentry_system_group }}'
+    state: present
+
+- name: Add Sentry user
+  user:
+    name: '{{ sentry_system_user }}'
+    group: '{{ sentry_system_group }}'
+    state: present
 
 - name: Create a virtualenv and install Sentry with pip
   pip:
     name: sentry
-    version: 9.0.0
-    virtualenv: /srv/sentry
+    version: '{{ sentry_version }}'
+    virtualenv: '{{ sentry_install_dir }}'
     virtualenv_python: /usr/bin/python2.7
     state: present
+
+- name: Fail when secret-key is UNSAFE
+  fail:
+      msg: |
+        The secret key has not been set, please generate a new secret key.
+        If key ever becomes compromised, it's important to regenerate a new key
+        Changing this value will result in all current sessions being invalidated.
+        A new key can be generated with `$ sentry config generate-secret-key`
+  when: sentry_config_yaml['system.secret-key'] is match('UNSAFE')
+
+- name: Create etc-dir for Sentry
+  file:
+      path: '{{ sentry_install_dir }}/etc'
+      state: directory
+
+- name: Write config.yaml
+  copy:
+    content: '{{ sentry_config_yaml|to_nice_yaml }}'
+    dest: '{{ sentry_install_dir }}/etc/config.yml'
+  notify: restart sentry
+  when: not sentry_config_yaml['system.secret-key'] is match('UNSAFE')
+
+- name: Write sentry.conf.py
+  template:
+    src: sentry.conf.py
+    dest: '{{ sentry_install_dir }}/etc/sentry.conf.py'
+  notify: restart sentry
+
+- name: Configure Systemd
+  template:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
+  with_items:
+      - sentry-web.service
+      - sentry-worker.service
+      - sentry-cron.service
+  notify: restart sentry
+
+- name: Enable sentry-web
+  service:
+    name: sentry-web
+    enabled: yes
+
+# Sentry uses South which has a memory leak, this is a workaround that should only be run the first time,
+# after that the regular upgrade command can be used.
+# This workaround is not guaranteed to work, you are better off adding more RAM.
+# Issue: https://github.com/getsentry/sentry/issues/8862
+# Workaround: https://github.com/getsentry/sentry/issues/8862#issuecomment-447259743
+- name: Initialize/Upgrade Sentry database
+  shell: |
+      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django syncdb
+      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django migrate --merge --ignore-ghost-migrations --noinput sentry 0100
+      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django migrate --merge --ignore-ghost-migrations --noinput sentry 0200
+      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django migrate --merge --ignore-ghost-migrations --noinput sentry 0300
+      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django migrate --merge --ignore-ghost-migrations --noinput sentry 0400
+      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry upgrade --noinput
+      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry exec <(echo 'from sentry.models import Project; from sentry.receivers.core import create_default_projects; create_default_projects([Project])')
+  vars:
+      ansible_ssh_pipelining: true
+  when: sentry_run_upgrade_workaround
+
+- name: Initialize/Upgrade Sentry database
+  shell: 'SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry upgrade --noinput'
+  vars:
+      ansible_ssh_pipelining: true
+  notify: restart sentry
+  when: not sentry_run_upgrade_workaround
+  # This is not idempotent, looking for a solution
+
+- name: Make sure the Sentry user is the owner
+  file:
+    path: '{{ sentry_install_dir }}'
+    owner: '{{ sentry_system_user }}'
+    group: '{{ sentry_system_group }}'

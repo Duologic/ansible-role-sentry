@@ -9,11 +9,11 @@ CONF_ROOT = os.path.dirname(__file__)
 DATABASES = {
     'default': {
         'ENGINE': 'sentry.db.postgres',
-        'NAME': 'sentry',
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
+        'NAME': '{{ sentry_db_name }}',
+        'USER': '{{ sentry_db_user }}',
+        'PASSWORD': '{{ sentry_db_password }}',
+        'HOST': '{{ sentry_db_host }}',
+        'PORT': '{{ sentry_db_port }}',
         'AUTOCOMMIT': True,
         'ATOMIC_REQUESTS': False,
     }
@@ -65,7 +65,7 @@ SENTRY_CACHE = 'sentry.cache.redis.RedisCache'
 # information on configuring your queue broker and workers. Sentry relies
 # on a Python framework called Celery to manage queues.
 
-BROKER_URL = 'redis://localhost:6379'
+BROKER_URL = '{{ sentry_broker_url }}'
 
 ###############
 # Rate Limits #
@@ -119,17 +119,20 @@ SENTRY_DIGESTS = 'sentry.digests.backends.redis.RedisBackend'
 
 # If you're using a reverse SSL proxy, you should enable the X-Forwarded-Proto
 # header and uncomment the following settings
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
+{% if sentry_behind_ssl_proxy %}
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+{% endif %}
 
 # If you're not hosting at the root of your web server,
 # you need to uncomment and set it to the path where Sentry is hosted.
 # FORCE_SCRIPT_NAME = '/sentry'
 
-SENTRY_WEB_HOST = '0.0.0.0'
-SENTRY_WEB_PORT = 9000
+SENTRY_WEB_HOST = '{{ sentry_web_host }}'
+SENTRY_WEB_PORT = {{ sentry_web_port }}
 SENTRY_WEB_OPTIONS = {
     # 'workers': 3,  # the number of web workers
     # 'protocol': 'uwsgi',  # Enable uwsgi protocol instead of http
 }
+SENTRY_FEATURES["auth:register"] = {{ sentry_auth_register }}
