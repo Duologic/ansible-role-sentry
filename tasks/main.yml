@@ -95,7 +95,7 @@
     enabled: yes
 
 - name: Initialize/Upgrade Sentry database
-  shell: 'SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry upgrade --noinput'
+  shell: '{{ sentry_install_dir }}/bin/sentry --config {{ sentry_install_dir }}/etc upgrade --noinput'
   vars:
       ansible_ssh_pipelining: true
   notify: restart sentry
