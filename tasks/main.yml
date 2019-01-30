@@ -111,6 +111,7 @@
   vars:
       ansible_ssh_pipelining: true
   notify: restart sentry
+  tags: [ 'skip_ansible_lint' ]
   # This is not idempotent, looking for a solution
 
 - name: Make sure the Sentry user is the owner
