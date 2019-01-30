@@ -4,11 +4,6 @@ sentry_install_dir: '/srv/sentry'
 sentry_system_user: 'sentry'
 sentry_system_group: 'sentry'
 
-# Sentry uses South which has a memory leak, this is a workaround.
-# https://github.com/getsentry/sentry/issues/8862
-# https://github.com/getsentry/sentry/issues/8862#issuecomment-447259743
-sentry_run_upgrade_workaround: false
-
 # config.yml settigs
 sentry_mail_backend: 'dummy'
 sentry_mail_host: 'localhost'

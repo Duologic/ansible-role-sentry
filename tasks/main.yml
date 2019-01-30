@@ -94,30 +94,11 @@
     name: sentry-web
     enabled: yes
 
-# Sentry uses South which has a memory leak, this is a workaround that should only be run the first time,
-# after that the regular upgrade command can be used.
-# This workaround is not guaranteed to work, you are better off adding more RAM.
-# Issue: https://github.com/getsentry/sentry/issues/8862
-# Workaround: https://github.com/getsentry/sentry/issues/8862#issuecomment-447259743
-- name: Initialize/Upgrade Sentry database
-  shell: |
-      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django syncdb
-      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django migrate --merge --ignore-ghost-migrations --noinput sentry 0100
-      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django migrate --merge --ignore-ghost-migrations --noinput sentry 0200
-      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django migrate --merge --ignore-ghost-migrations --noinput sentry 0300
-      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry django migrate --merge --ignore-ghost-migrations --noinput sentry 0400
-      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry upgrade --noinput
-      SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry exec <(echo 'from sentry.models import Project; from sentry.receivers.core import create_default_projects; create_default_projects([Project])')
-  vars:
-      ansible_ssh_pipelining: true
-  when: sentry_run_upgrade_workaround
-
 - name: Initialize/Upgrade Sentry database
   shell: 'SENTRY_CONF={{ sentry_install_dir }}/etc {{ sentry_install_dir }}/bin/sentry upgrade --noinput'
   vars:
       ansible_ssh_pipelining: true
   notify: restart sentry
-  when: not sentry_run_upgrade_workaround
   # This is not idempotent, looking for a solution
 
 - name: Make sure the Sentry user is the owner
