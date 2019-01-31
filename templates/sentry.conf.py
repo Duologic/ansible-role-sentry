@@ -136,3 +136,5 @@ SENTRY_WEB_OPTIONS = {
     # 'protocol': 'uwsgi',  # Enable uwsgi protocol instead of http
 }
 SENTRY_FEATURES["auth:register"] = {{ sentry_auth_register }}
+
+{{ sentry_extra_conf_py }}

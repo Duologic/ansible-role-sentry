@@ -11,9 +11,23 @@ You probaly want Postgresql and Redis to run Sentry, see Example Playbook
 Role Variables
 --------------
 
-You probably want to generate a strong secret key. See [defaults/main.yml](defaults/main.yml) for more configuration options.
+You probably want to generate a strong secret key:
 
- sentry_secret_key: 'UNSAFE'
+    sentry_secret_key: 'UNSAFE'
+
+You can install extra packages with pip in the virtualenv, for example the plugin bundle:
+
+    sentry_extra_pip_packages:
+      - 'sentry-plugins==9.0.0'
+
+The extra packages/plugins might need some extra configuration:
+
+    sentry_extra_conf_py: |
+        GITHUB_APP_ID = 'GitHub Application Client ID'
+        GITHUB_API_SECRET = 'GitHub Application Client Secret'
+        GITHUB_EXTENDED_PERMISSIONS = ['repo']
+
+See [defaults/main.yml](defaults/main.yml) for more configuration options.
 
 Example Playbook
 ----------------
@@ -49,8 +63,10 @@ Example Playbook
     - import_role:
         name: sentry
       vars:
-          sentry_db_user: 'sentry'
-          sentry_secret_key: 'SAFE'
+        sentry_db_user: 'sentry'
+        sentry_secret_key: 'SAFE'
+        sentry_extra_pip_packages:
+            - 'sentry-plugins==9.0.0'
 ```
 
 License
