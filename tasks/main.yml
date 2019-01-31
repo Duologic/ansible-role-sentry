@@ -79,6 +79,7 @@
       state: directory
 
 - name: Write config.yaml
+  no_log: true
   copy:
     content: '{{ sentry_config_yaml|to_nice_yaml }}'
     dest: '{{ sentry_install_dir }}/etc/config.yml'
@@ -86,6 +87,7 @@
   when: not sentry_config_yaml['system.secret-key'] is match('UNSAFE')
 
 - name: Write sentry.conf.py
+  no_log: true
   template:
     src: sentry.conf.py
     dest: '{{ sentry_install_dir }}/etc/sentry.conf.py'
