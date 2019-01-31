@@ -3,6 +3,8 @@ sentry_version: '9.0.0'
 sentry_install_dir: '/srv/sentry'
 sentry_system_user: 'sentry'
 sentry_system_group: 'sentry'
+sentry_system_cron_hour: 3
+sentry_system_cron_minute: 0
 sentry_extra_pip_packages: []
 
 # config.yml settigs

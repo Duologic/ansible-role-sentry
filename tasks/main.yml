@@ -127,6 +127,13 @@
   tags: [ 'skip_ansible_lint' ]
   # This is not idempotent, looking for a solution
 
+- name: Install cronjob to cleanup Sentry
+  cron:
+      job: '{{ sentry_install_dir }}/bin/sentry --config {{ sentry_install_dir }}/etc cleanup --days=30'
+      hour: '{{ sentry_system_cron_hour }}'
+      minute: '{{ sentry_system_cron_minute }}'
+      user: '{{ sentry_system_user }}'
+
 - name: Make sure the Sentry user is the owner
   file:
     path: '{{ sentry_install_dir }}'
