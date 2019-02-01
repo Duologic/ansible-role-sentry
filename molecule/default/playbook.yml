@@ -1,0 +1,28 @@
+---
+- name: Converge
+  hosts: all
+  become: True
+
+  vars:
+    sentry_db_user: 'postgres'
+    sentry_db_name: 'sentry'
+    sentry_secret_key: 'SAFE'
+    postgres_repo_version: '9.5'
+    postgresql_databases:
+        - name: '{{ sentry_db_name }}'
+
+  pre_tasks:
+    - name: Enable EPEL repo on EL for Redis role
+      yum: pkg=epel-release state=present
+      when: ansible_os_family == 'RedHat'
+
+  roles:
+    - role: geerlingguy.redis
+    - role: Duologic.postgresql_repository
+    - role: geerlingguy.postgresql
+    - role: Duologic.sentry
+
+  post_tasks:
+    - name: Check if Sentry is running.
+      uri:
+        url: "http://127.0.0.1:9000/"
