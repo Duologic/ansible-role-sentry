@@ -3,17 +3,17 @@
   apt: name={{ packages }} state=present
   vars:
       packages:
-        - python-virtualenv
-        - python-setuptools
-        - python-dev
-        - libxslt1-dev
-        - gcc
-        - libffi-dev
-        - libjpeg-dev
-        - libxml2-dev
-        - libxslt-dev
-        - libyaml-dev
-        - libpq-dev
+          - python-virtualenv
+          - python-setuptools
+          - python-dev
+          - libxslt1-dev
+          - gcc
+          - libffi-dev
+          - libjpeg-dev
+          - libxml2-dev
+          - libxslt-dev
+          - libyaml-dev
+          - libpq-dev
   register: task_result
   until: task_result is success
   retries: 10
@@ -24,17 +24,17 @@
   yum: name={{ packages }} state=present
   vars:
       packages:
-        - python-virtualenv
-        - python-setuptools
-        - python-devel
-        - gcc
-        - gcc-c++
-        - libffi-devel
-        - libjpeg-turbo-devel
-        - libxml2-devel
-        - libxslt-devel
-        - libyaml-devel
-        - libpqxx-devel
+          - python-virtualenv
+          - python-setuptools
+          - python-devel
+          - gcc
+          - gcc-c++
+          - libffi-devel
+          - libjpeg-turbo-devel
+          - libxml2-devel
+          - libxslt-devel
+          - libyaml-devel
+          - libpqxx-devel
   register: task_result
   until: task_result is success
   retries: 10
@@ -43,22 +43,22 @@
 
 - name: Add Sentry group
   group:
-    name: '{{ sentry_system_group }}'
-    state: present
+      name: '{{ sentry_system_group }}'
+      state: present
 
 - name: Add Sentry user
   user:
-    name: '{{ sentry_system_user }}'
-    group: '{{ sentry_system_group }}'
-    state: present
+      name: '{{ sentry_system_user }}'
+      group: '{{ sentry_system_group }}'
+      state: present
 
 - name: Create a virtualenv and install Sentry with pip
   pip:
-    name: sentry
-    version: '{{ sentry_version }}'
-    virtualenv: '{{ sentry_install_dir }}'
-    virtualenv_python: /usr/bin/python2.7
-    state: present
+      name: sentry
+      version: '{{ sentry_version }}'
+      virtualenv: '{{ sentry_install_dir }}'
+      virtualenv_python: /usr/bin/python2.7
+      state: present
   register: _virtualenv_install
   until: _virtualenv_install is success
   retries: 10
@@ -66,10 +66,10 @@
 
 - name: Install extra packages in the virtualenv
   pip:
-    name: '{{ sentry_extra_pip_packages }}'
-    virtualenv: '{{ sentry_install_dir }}'
-    virtualenv_python: /usr/bin/python2.7
-    state: present
+      name: '{{ sentry_extra_pip_packages }}'
+      virtualenv: '{{ sentry_install_dir }}'
+      virtualenv_python: /usr/bin/python2.7
+      state: present
   register: _virtualenv_extra
   until: _virtualenv_extra is success
   retries: 10
@@ -92,8 +92,8 @@
 - name: Write config.yml
   no_log: true
   copy:
-    content: '{{ sentry_config_yml|to_nice_yaml }}'
-    dest: '{{ sentry_install_dir }}/etc/config.yml'
+      content: '{{ sentry_config_yml|to_nice_yaml }}'
+      dest: '{{ sentry_install_dir }}/etc/config.yml'
   notify: restart sentry
   register: _config_yml
   when: not sentry_config_yml['system.secret-key'] is match('UNSAFE')
@@ -101,15 +101,15 @@
 - name: Write sentry.conf.py
   no_log: true
   template:
-    src: sentry.conf.py
-    dest: '{{ sentry_install_dir }}/etc/sentry.conf.py'
+      src: sentry.conf.py
+      dest: '{{ sentry_install_dir }}/etc/sentry.conf.py'
   notify: restart sentry
   register: _sentry_conf_py
 
 - name: Configure Systemd
   template:
-    src: '{{ item }}'
-    dest: '/etc/systemd/system/{{ item }}'
+      src: '{{ item }}'
+      dest: '/etc/systemd/system/{{ item }}'
   with_items:
       - sentry-web.service
       - sentry-worker.service
@@ -118,17 +118,19 @@
 
 - name: Enable sentry-web
   service:
-    name: sentry-web
-    enabled: yes
+      name: sentry-web
+      enabled: true
 
 - name: Initialize/Upgrade Sentry database
   shell: '{{ sentry_install_dir }}/bin/sentry --config {{ sentry_install_dir }}/etc upgrade --noinput'
   vars:
       ansible_ssh_pipelining: true
   notify: restart sentry
-  tags: [ 'skip_ansible_lint' ]
-  when: _virtualenv_install is changed or _virtualenv_extra is changed or _config_yml is changed or _sentry_conf_py is changed
-  # This is not idempotent, looking for a solution
+  tags: ['skip_ansible_lint']
+  when: _virtualenv_install is changed or
+        _virtualenv_extra is changed or
+        _config_yml is changed or
+        _sentry_conf_py is changed
 
 - name: Install cronjob to cleanup Sentry
   cron:
@@ -140,6 +142,6 @@
 
 - name: Make sure the Sentry user is the owner
   file:
-    path: '{{ sentry_install_dir }}'
-    owner: '{{ sentry_system_user }}'
-    group: '{{ sentry_system_group }}'
+      path: '{{ sentry_install_dir }}'
+      owner: '{{ sentry_system_user }}'
+      group: '{{ sentry_system_group }}'

@@ -1,7 +1,7 @@
 ---
 - name: Converge
   hosts: all
-  become: True
+  become: true
 
   vars:
     sentry_db_user: 'postgres'
@@ -9,7 +9,7 @@
     sentry_secret_key: 'SAFE'
     postgres_repo_version: '9.5'
     postgresql_databases:
-        - name: '{{ sentry_db_name }}'
+      - name: '{{ sentry_db_name }}'
 
   pre_tasks:
     - name: Enable EPEL repo on EL for Redis role

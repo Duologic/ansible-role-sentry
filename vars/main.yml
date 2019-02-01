@@ -1,3 +1,4 @@
+---
 sentry_config_yml:
   mail.backend: '{{ sentry_mail_backend }}'
   mail.host: '{{ sentry_mail_host }}'
