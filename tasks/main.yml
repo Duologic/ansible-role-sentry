@@ -59,8 +59,8 @@
     virtualenv: '{{ sentry_install_dir }}'
     virtualenv_python: /usr/bin/python2.7
     state: present
-  register: task_result
-  until: task_result is success
+  register: _virtualenv_install
+  until: _virtualenv_install is success
   retries: 10
   delay: 2
 
@@ -70,8 +70,8 @@
     virtualenv: '{{ sentry_install_dir }}'
     virtualenv_python: /usr/bin/python2.7
     state: present
-  register: task_result
-  until: task_result is success
+  register: _virtualenv_extra
+  until: _virtualenv_extra is success
   retries: 10
   delay: 2
 
@@ -82,20 +82,21 @@
         If key ever becomes compromised, it's important to regenerate a new key
         Changing this value will result in all current sessions being invalidated.
         A new key can be generated with `$ sentry config generate-secret-key`
-  when: sentry_config_yaml['system.secret-key'] is match('UNSAFE')
+  when: sentry_config_yml['system.secret-key'] is match('UNSAFE')
 
 - name: Create etc-dir for Sentry
   file:
       path: '{{ sentry_install_dir }}/etc'
       state: directory
 
-- name: Write config.yaml
+- name: Write config.yml
   no_log: true
   copy:
-    content: '{{ sentry_config_yaml|to_nice_yaml }}'
+    content: '{{ sentry_config_yml|to_nice_yaml }}'
     dest: '{{ sentry_install_dir }}/etc/config.yml'
   notify: restart sentry
-  when: not sentry_config_yaml['system.secret-key'] is match('UNSAFE')
+  register: _config_yml
+  when: not sentry_config_yml['system.secret-key'] is match('UNSAFE')
 
 - name: Write sentry.conf.py
   no_log: true
@@ -103,6 +104,7 @@
     src: sentry.conf.py
     dest: '{{ sentry_install_dir }}/etc/sentry.conf.py'
   notify: restart sentry
+  register: _sentry_conf_py
 
 - name: Configure Systemd
   template:
@@ -125,10 +127,12 @@
       ansible_ssh_pipelining: true
   notify: restart sentry
   tags: [ 'skip_ansible_lint' ]
+  when: _virtualenv_install is changed or _virtualenv_extra is changed or _config_yml is changed or _sentry_conf_py is changed
   # This is not idempotent, looking for a solution
 
 - name: Install cronjob to cleanup Sentry
   cron:
+      name: 'Cleanup Sentry'
       job: '{{ sentry_install_dir }}/bin/sentry --config {{ sentry_install_dir }}/etc cleanup --days=30'
       hour: '{{ sentry_system_cron_hour }}'
       minute: '{{ sentry_system_cron_minute }}'
