@@ -72,7 +72,7 @@ Example Playbook
 ```
 
 Supported distributions
-=======================
+-----------------------
 
 This project is tested on CentOS 7, Debian 9 and Ubuntu 18.04.
 
