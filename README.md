@@ -71,6 +71,19 @@ Example Playbook
             - 'sentry-plugins==9.0.0'
 ```
 
+Supported distributions
+=======================
+
+This project is tested on CentOS 7, Debian 9 and Ubuntu 18.04.
+
+Known issues with other distributions:
+
+- CentOS 6: python2.7 not available
+- Ubuntu 16.04: redis-server not available
+- Debian 8: issues with cryptography (and possibly setuptools)
+
+See this [build](https://travis-ci.org/Duologic/ansible-role-sentry/builds/487380995).
+
 License
 -------
 
