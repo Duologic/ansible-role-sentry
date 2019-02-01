@@ -22,6 +22,9 @@
     - name: Enable EPEL repo on EL for Redis role
       yum: pkg=epel-release state=present
       when: ansible_os_family == 'RedHat'
+    - name: Install cron (RedHat).
+      yum: name=cronie state=present
+      when: ansible_os_family == 'RedHat'
 
   roles:
     - role: geerlingguy.redis
