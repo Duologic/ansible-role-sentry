@@ -1,6 +1,8 @@
 Duologic.sentry
 ===============
 
+[![Build Status](https://travis-ci.org/Duologic/ansible-role-sentry.svg?branch=master)](https://travis-ci.org/Duologic/ansible-role-sentry)
+
 This role configures and installs Sentry with Python.
 
 Requirements
