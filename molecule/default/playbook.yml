@@ -26,11 +26,16 @@
       yum: name=cronie state=present
       when: ansible_os_family == 'RedHat'
 
-  roles:
-    - role: geerlingguy.redis
-    - role: Duologic.postgresql_repository
-    - role: geerlingguy.postgresql
-    - role: Duologic.sentry
+  tasks:
+    - import_role:
+        name: geerlingguy.redis
+    - import_role:
+        name: Duologic.postgresql_repository
+    - import_role:
+        name: geerlingguy.postgresql
+    - meta: flush_handlers
+    - import_role:
+        name: Duologic.sentry
 
   post_tasks:
     - name: Wait for Sentry to leave the runway

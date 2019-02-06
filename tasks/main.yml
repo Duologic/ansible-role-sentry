@@ -121,9 +121,6 @@
       name: sentry-web
       enabled: true
 
-- name: Flush handlers to enable HBA entries in Postgresql
-  meta: flush_handlers
-
 - name: Initialize/Upgrade Sentry database
   shell: '{{ sentry_install_dir }}/bin/sentry --config {{ sentry_install_dir }}/etc upgrade --noinput'
   vars:
