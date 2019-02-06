@@ -10,6 +10,9 @@ Requirements
 
 You probaly want Postgresql and Redis to run Sentry, see Example Playbook
 
+NOTE: Provide the machine with enough memory (2GB+) as Sentry upgrade has a memory leak.
+(see [getsentry/sentry#8862](https://github.com/getsentry/sentry/issues/8862))
+
 Role Variables
 --------------
 
