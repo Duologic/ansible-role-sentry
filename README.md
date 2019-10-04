@@ -87,6 +87,14 @@ Known issues with other distributions:
 
 See this [build](https://travis-ci.org/Duologic/ansible-role-sentry/builds/487380995).
 
+Testing
+-------
+Create a python [virtualenv](https://docs.python-guide.org/dev/virtualenvs/) and run
+```sh
+pip install molecule docker-py
+molecule test
+```
+
 License
 -------
 
