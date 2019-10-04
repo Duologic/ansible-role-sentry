@@ -136,10 +136,13 @@
 - name: Install cronjob to cleanup Sentry
   cron:
       name: 'Cleanup Sentry'
-      job: '{{ sentry_install_dir }}/bin/sentry --config {{ sentry_install_dir }}/etc cleanup --days=30'
+      job: |
+        '{{ sentry_install_dir }}/bin/sentry --config {{ sentry_install_dir }}/etc cleanup
+        --days={{ sentry_cleanup_days }}'
       hour: '{{ sentry_system_cron_hour }}'
       minute: '{{ sentry_system_cron_minute }}'
       user: '{{ sentry_system_user }}'
+  when: sentry_schedule_cleanup
 
 - name: Make sure the Sentry user is the owner
   file:
