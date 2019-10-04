@@ -38,9 +38,7 @@
         name: Duologic.sentry
 
   post_tasks:
-    - name: Wait for Sentry to leave the runway
-      pause:
-        seconds: 30
     - name: Check if Sentry is running.
-      uri:
-        url: "http://127.0.0.1:9000/"
+      wait_for:
+        port: 9000
+        delay: 30
