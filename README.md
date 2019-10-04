@@ -32,6 +32,15 @@ The extra packages/plugins might need some extra configuration:
         GITHUB_API_SECRET = 'GitHub Application Client Secret'
         GITHUB_EXTENDED_PERMISSIONS = ['repo']
 
+You might want to set whether to run [cleanup](https://docs.sentry.io/server/cli/cleanup/)
+and the number of days to keep data for by setting:
+```yml
+sentry_schedule_cleanup: true # whether to schedule a cleanup. Default is true
+sentry_cleanup_days: 30 # the number of days to keep old data
+```
+Note that this does not delete metadata such as orgnanization and project configurations.
+
+
 See [defaults/main.yml](defaults/main.yml) for more configuration options.
 
 Example Playbook
