@@ -33,6 +33,11 @@ sentry_filestore_backend: 'filesystem'
 sentry_filestore_options:
   location: '/tmp/sentry-files'
 
+sentry_users:
+  - email: "{{ sentry_mail_from }}"
+    password: "changeme"
+    admin: true
+
 # sentry.conf.py settings
 sentry_db_name: 'sentry'
 sentry_db_user: 'sentry'

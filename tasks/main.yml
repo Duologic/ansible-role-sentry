@@ -133,6 +133,17 @@
         _config_yml is changed or
         _sentry_conf_py is changed
 
+- name: Create Sentry users
+  shell: >
+    '
+    {{ sentry_install_dir }}/bin/sentry --config {{ sentry_install_dir }}/etc createuser --no-input
+     --email {{ item.email }}
+     --password {{ item.password }}
+    {{ item.superuser | ternary("--superuser", "--no-superuser", "") }}
+    '
+  with_items: "{{ sentry_users }}"
+  ignore_errors: true
+
 - name: Install cronjob to cleanup Sentry
   cron:
       name: 'Cleanup Sentry'
